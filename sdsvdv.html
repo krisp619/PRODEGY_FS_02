@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Management System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f6f9;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    h1, h2 {
+      color: #333;
+    }
+    
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    input[type="text"],
+    input[type="password"],
+    input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    
+    button.secondary {
+      background-color: #f44336;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    
+    th, td {
+      text-align: left;
+      padding: 12px;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    .table-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .hidden {
+      display: none;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      padding: 10px;
+      width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .user-info {
+      text-align: right;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Login Section -->
+    <div id="login-section" class="login-container card">
+      <h2>Employee Management System Login</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" id="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit">Login</button>
+      </form>
+      <p id="login-error" style="color: red; display: none;">Invalid username or password.</p>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard-section" class="hidden">
+      <div class="user-info">
+        <p>Logged in as: <span id="logged-user">Admin</span> | <a href="#" id="logout-link">Logout</a></p>
+      </div>
+      
+      <div class="card">
+        <div class="header">
+          <h1>Employee Management</h1>
+          <input type="text" id="search-employee" class="search-box" placeholder="Search employees...">
+        </div>
+        
+        <button id="add-employee-btn">Add New Employee</button>
+        
+        <div id="employee-form-container" class="hidden card" style="margin-top: 20px;">
+          <h2 id="form-title">Add Employee</h2>
+          <form id="employee-form">
+            <input type="hidden" id="employee-id">
+            <div class="form-group">
+              <label for="name">Full Name:</label>
+              <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+              <label for="position">Position:</label>
+              <input type="text" id="position" required>
+            </div>
+            <div class="form-group">
+              <label for="department">Department:</label>
+              <input type="text" id="department" required>
+            </div>
+            <div class="form-group">
+              <label for="joining-date">Joining Date:</label>
+              <input type="text" id="joining-date" required>
+            </div>
+            <button type="submit">Save</button>
+            <button type="button" id="cancel-btn">Cancel</button>
+          </form>
+        </div>
+        
+        <div style="margin-top: 20px;">
+          <table id="employees-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Position</th>
+                <th>Department</th>
+                <th>Joining Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="employees-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Sample data
+    let employees = [
+      { id: 1, name: 'John Doe', email: 'john@example.com', position: 'Developer', department: 'IT', joiningDate: '2022-01-15' },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com', position: 'Designer', department: 'Creative', joiningDate: '2021-06-22' },
+      { id: 3, name: 'Robert Johnson', email: 'robert@example.com', position: 'Manager', department: 'Marketing', joiningDate: '2020-11-10' },
+      { id: 4, name: 'Emily Davis', email: 'emily@example.com', position: 'HR Specialist', department: 'Human Resources', joiningDate: '2023-03-05' },
+      { id: 5, name: 'Michael Brown', email: 'michael@example.com', position: 'Accountant', department: 'Finance', joiningDate: '2022-08-17' }
+    ];
+
+    // User credentials (in a real app, this would be handled server-side)
+    const validCredentials = [
+      { username: 'admin', password: 'admin123', role: 'Admin' },
+      { username: 'user', password: 'user123', role: 'User' }
+    ];
+
+    // DOM elements
+    const loginSection = document.getElementById('login-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    const loginForm = document.getElementById('login-form');
+    const loginError = document.getElementById('login-error');
+    const loggedUser = document.getElementById('logged-user');
+    const logoutLink = document.getElementById('logout-link');
+    const employeesTable = document.getElementById('employees-table');
+    const employeesList = document.getElementById('employees-list');
+    const addEmployeeBtn = document.getElementById('add-employee-btn');
+    const employeeFormContainer = document.getElementById('employee-form-container');
+    const employeeForm = document.getElementById('employee-form');
+    const formTitle = document.getElementById('form-title');
+    const employeeIdInput = document.getElementById('employee-id');
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const positionInput = document.getElementById('position');
+    const departmentInput = document.getElementById('department');
+    const joiningDateInput = document.getElementById('joining-date');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const searchEmployee = document.getElementById('search-employee');
+
+    // Login form submit
+    loginForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      const user = validCredentials.find(u => u.username === username && u.password === password);
+      
+      if (user) {
+        loginSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        loggedUser.textContent = user.role;
+        renderEmployeesList();
+      } else {
+        loginError.style.display = 'block';
+      }
+    });
+
+    // Logout link
+    logoutLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      dashboardSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      loginError.style.display = 'none';
+    });
+
+    // Add new employee button
+    addEmployeeBtn.addEventListener('click', function() {
+      showEmployeeForm('add');
+    });
+
+    // Cancel button in employee form
+    cancelBtn.addEventListener('click', function() {
+      hideEmployeeForm();
+    });
+
+    // Employee form submit
+    employeeForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const employeeData = {
+        id: employeeIdInput.value ? parseInt(employeeIdInput.value) : generateEmployeeId(),
+        name: nameInput.value,
+        email: emailInput.value,
+        position: positionInput.value,
+        department: departmentInput.value,
+        joiningDate: joiningDateInput.value
+      };
+      
+      if (employeeIdInput.value) {
+        // Update existing employee
+        const index = employees.findIndex(emp => emp.id === parseInt(employeeIdInput.value));
+        if (index !== -1) {
+          employees[index] = employeeData;
+        }
+      } else {
+        // Add new employee
+        employees.push(employeeData);
+      }
+      
+      renderEmployeesList();
+      hideEmployeeForm();
+    });
+
+    // Search functionality
+    searchEmployee.addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const filteredEmployees = employees.filter(emp => 
+        emp.name.toLowerCase().includes(searchTerm) || 
+        emp.email.toLowerCase().includes(searchTerm) || 
+        emp.position.toLowerCase().includes(searchTerm) || 
+        emp.department.toLowerCase().includes(searchTerm)
+      );
+      
+      renderEmployeesList(filteredEmployees);
+    });
+
+    // Function to render employees list
+    function renderEmployeesList(employeesToRender = employees) {
+      employeesList.innerHTML = '';
+      
+      employeesToRender.forEach(emp => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${emp.id}</td>
+          <td>${emp.name}</td>
+          <td>${emp.email}</td>
+          <td>${emp.position}</td>
+          <td>${emp.department}</td>
+          <td>${emp.joiningDate}</td>
+          <td class="table-actions">
+            <button onclick="editEmployee(${emp.id})">Edit</button>
+            <button class="secondary" onclick="deleteEmployee(${emp.id})">Delete</button>
+          </td>
+        `;
+        
+        employeesList.appendChild(row);
+      });
+    }
+
+    // Edit employee function
+    window.editEmployee = function(id) {
+      const employee = employees.find(emp => emp.id === id);
+      if (employee) {
+        showEmployeeForm('edit', employee);
+      }
+    };
+
+    // Delete employee function
+    window.deleteEmployee = function(id) {
+      if (confirm('Are you sure you want to delete this employee?')) {
+        employees = employees.filter(emp => emp.id !== id);
+        renderEmployeesList();
+      }
+    };
+
+    // Function to show employee form (add or edit)
+    function showEmployeeForm(mode, employee = null) {
+      if (mode === 'add') {
+        formTitle.textContent = 'Add Employee';
+        employeeForm.reset();
+        employeeIdInput.value = '';
+      } else if (mode === 'edit' && employee) {
+        formTitle.textContent = 'Edit Employee';
+        employeeIdInput.value = employee.id;
+        nameInput.value = employee.name;
+        emailInput.value = employee.email;
+        positionInput.value = employee.position;
+        departmentInput.value = employee.department;
+        joiningDateInput.value = employee.joiningDate;
+      }
+      
+      employeeFormContainer.classList.remove('hidden');
+    }
+
+    // Function to hide employee form
+    function hideEmployeeForm() {
+      employeeFormContainer.classList.add('hidden');
+      employeeForm.reset();
+    }
+
+    // Generate unique employee ID
+    function generateEmployeeId() {
+      return employees.length > 0 ? Math.max(...employees.map(emp => emp.id)) + 1 : 1;
+    }
+  </script>
+</body>
+</html>
