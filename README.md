@@ -18,7 +18,3 @@ This is a simple web-based **Employee Management System** developed as part of *
 - CSS
 - JavaScript
 
-## How to Run
-
-1. Clone this repository:
-
